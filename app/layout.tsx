@@ -2,6 +2,8 @@ import "./globals.css";
 import type { ReactNode } from "react";
 import SessionLayout from "../components/SessionLayout";
 import NavBar from "../components/NavBar";
+import { Analytics } from "@vercel/analytics/next"
+
 
 export const metadata = {
   title: "MERN Full-Stack App",
@@ -16,6 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <NavBar />
           <main className="p-6">{children}</main>
         </SessionLayout>
+        <Analytics />
       </body>
     </html>
   );
