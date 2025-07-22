@@ -1,6 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function ResetRequestPage() {
   const [email, setEmail] = useState("");
@@ -20,22 +28,31 @@ export default function ResetRequestPage() {
   }
 
   return (
-    <main className="max-w-md mx-auto mt-10 p-6 bg-white shadow rounded">
-      <h1 className="text-xl font-semibold mb-4">Reset Your Password</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full border px-3 py-2"
-        />
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2">
-          Send Reset Link
-        </button>
-        {message && <p className="text-sm text-gray-600 mt-2">{message}</p>}
-      </form>
+    <main className="max-w-md mx-auto mt-10 px-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Reset Your Password</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Button type="submit" className="w-full">
+              Send Reset Link
+            </Button>
+            {message && (
+              <p className="text-sm text-muted-foreground mt-2">
+                {message}
+              </p>
+            )}
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }

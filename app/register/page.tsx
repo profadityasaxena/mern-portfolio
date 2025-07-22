@@ -3,6 +3,22 @@
 import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 const ALLOWED_ROLES = ["user", "vendor", "client"] as const;
 type Role = (typeof ALLOWED_ROLES)[number];
@@ -27,7 +43,6 @@ export default function RegisterPage() {
 
   const [error, setError] = useState("");
 
-  // Redirect logged-in users away from register page
   useEffect(() => {
     if (status === "authenticated") {
       router.push("/dashboard");
@@ -64,61 +79,81 @@ export default function RegisterPage() {
 
   if (status === "loading") {
     return (
-      <main className="p-6 text-center">
+      <main className="p-6 text-center text-muted-foreground">
         <p>Loading...</p>
       </main>
     );
   }
 
   return (
-    <main className="max-w-md mx-auto mt-10 p-6 bg-white shadow rounded">
-      <h1 className="text-2xl font-bold mb-4">Register</h1>
+    <main className="max-w-md mx-auto mt-10 px-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Register</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="text"
+              placeholder="Name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+            />
+            <Input
+              type="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              required
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={(e) =>
+                setForm({ ...form, password: e.target.value })
+              }
+              required
+            />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Name"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          required
-          className="w-full border px-3 py-2"
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          required
-          className="w-full border px-3 py-2"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          required
-          className="w-full border px-3 py-2"
-        />
+            <Select
+              value={form.role}
+              onValueChange={(value) =>
+                setForm({ ...form, role: value as Role })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                {ALLOWED_ROLES.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {role.charAt(0).toUpperCase() + role.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-        <select
-          value={form.role}
-          onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
-          className="w-full border px-3 py-2"
-          required
-        >
-          {ALLOWED_ROLES.map((role) => (
-            <option key={role} value={role}>
-              {role.charAt(0).toUpperCase() + role.slice(1)}
-            </option>
-          ))}
-        </select>
+            {error && (
+              <p className="text-destructive text-sm">{error}</p>
+            )}
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+            <Button type="submit" className="w-full">
+              Register
+            </Button>
+          </form>
 
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 w-full">
-          Register
-        </button>
-      </form>
+          <div className="text-right mt-2">
+            <Link
+              href="/reset"
+              className="text-sm text-muted-foreground hover:text-primary underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </main>
   );
 }

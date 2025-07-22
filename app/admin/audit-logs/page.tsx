@@ -1,6 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface AuditLog {
   id: string;
@@ -24,13 +46,13 @@ export default function AuditLogPage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [limit] = useState(10);
-  const [actionFilter, setActionFilter] = useState("");
+  const [actionFilter, setActionFilter] = useState("all");
 
   useEffect(() => {
     const query = new URLSearchParams();
     query.set("page", String(page));
     query.set("limit", String(limit));
-    if (actionFilter) query.set("action", actionFilter);
+    if (actionFilter !== "all") query.set("action", actionFilter);
 
     fetch(`/api/admin/audit-logs?${query.toString()}`)
       .then((res) => {
@@ -41,97 +63,112 @@ export default function AuditLogPage() {
         setLogs(data.logs);
         setTotal(data.total);
       })
-      .catch(() => setError("Access denied or failed to load audit logs."));
+      .catch(() =>
+        setError("Access denied or failed to load audit logs.")
+      );
   }, [page, limit, actionFilter]);
 
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <main className="max-w-6xl mx-auto mt-10 p-6 bg-white shadow rounded">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold">Audit Logs</h1>
-        <select
-          className="border px-2 py-1 text-sm"
-          value={actionFilter}
-          onChange={(e) => {
-            setActionFilter(e.target.value);
-            setPage(1); // Reset page on filter change
-          }}
-        >
-          <option value="">All Actions</option>
-          {ACTION_TYPES.map((action) => (
-            <option key={action} value={action}>
-              {action}
-            </option>
-          ))}
-        </select>
-      </div>
+    <main className="max-w-6xl mx-auto mt-10 px-4">
+      <Card>
+        <CardHeader className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+          <CardTitle className="text-2xl">Audit Logs</CardTitle>
 
-      {error && <p className="text-red-600 mb-4">{error}</p>}
+          <Select
+            value={actionFilter}
+            onValueChange={(value) => {
+              setActionFilter(value);
+              setPage(1);
+            }}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filter by Action" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Actions</SelectItem>
+              {ACTION_TYPES.map((action) => (
+                <SelectItem key={action} value={action}>
+                  {action}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardHeader>
 
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr className="bg-gray-100 border-b">
-            <th className="text-left py-2 px-3">Timestamp</th>
-            <th className="text-left py-2 px-3">Action</th>
-            <th className="text-left py-2 px-3">Actor ID</th>
-            <th className="text-left py-2 px-3">Target User ID</th>
-            <th className="text-left py-2 px-3">Details</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="text-center py-4 text-gray-500">
-                No audit logs found.
-              </td>
-            </tr>
-          ) : (
-            logs.map((log) => (
-              <tr key={log.id} className="border-b hover:bg-gray-50">
-                <td className="py-2 px-3">
-                  {new Date(log.timestamp).toLocaleString()}
-                </td>
-                <td className="py-2 px-3 font-medium">{log.action}</td>
-                <td className="py-2 px-3 text-xs text-gray-700">
-                  {log.actorId}
-                </td>
-                <td className="py-2 px-3 text-xs text-gray-700">
-                  {log.targetUserId}
-                </td>
-                <td className="py-2 px-3 text-xs">
-                  <pre className="whitespace-pre-wrap break-words">
-                    {JSON.stringify(log.details, null, 2)}
-                  </pre>
-                </td>
-              </tr>
-            ))
+        <CardContent>
+          {error && (
+            <p className="text-destructive mb-4 text-sm">{error}</p>
           )}
-        </tbody>
-      </table>
 
-      {/* Pagination controls */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-6">
-          <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            disabled={page === 1}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            Prev
-          </button>
-          <span className="text-sm">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-            disabled={page === totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      )}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Timestamp</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead>Actor ID</TableHead>
+                <TableHead>Target User ID</TableHead>
+                <TableHead>Details</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {logs.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-6 text-muted-foreground"
+                  >
+                    No audit logs found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                logs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell>
+                      {new Date(log.timestamp).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {log.action}
+                    </TableCell>
+                    <TableCell className="text-xs">{log.actorId}</TableCell>
+                    <TableCell className="text-xs">
+                      {log.targetUserId}
+                    </TableCell>
+                    <TableCell className="text-xs whitespace-pre-wrap break-words">
+                      <pre>{JSON.stringify(log.details, null, 2)}</pre>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                disabled={page === 1}
+              >
+                Prev
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                disabled={page === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }

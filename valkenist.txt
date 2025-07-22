@@ -16,5 +16,5 @@ Can interpret bird migrations as omens or messages
 “The Valkenists stood atop the Aether Spires, arms outstretched to the coming storm. With each gust, they whispered incantations no grounded soul could grasp.”
 
 ----
-checkpoint
+checkpoint : new auth
 ----

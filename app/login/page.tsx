@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 function LoginForm() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -28,41 +32,59 @@ function LoginForm() {
   }
 
   return (
-    <main className="max-w-md mx-auto mt-10 p-6 bg-white shadow rounded">
-      <h1 className="text-2xl font-bold mb-4">Login</h1>
+    <main className="max-w-md mx-auto mt-10 px-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">Login</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              required
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              required
+            />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          required
-          className="w-full border px-3 py-2"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          required
-          className="w-full border px-3 py-2"
-        />
-        {error && <p className="text-red-600">{error}</p>}
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 w-full">
-          Sign In
-        </button>
-      </form>
+            {error && (
+              <p className="text-destructive text-sm -mt-2">{error}</p>
+            )}
 
-      <div className="my-6 text-center text-gray-500">or</div>
+            <Button type="submit" className="w-full">
+              Sign In
+            </Button>
+          </form>
 
-      <button
-        type="button"
-        onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-        className="bg-red-600 text-white px-4 py-2 w-full"
-      >
-        Sign in with Google
-      </button>
+          {/* Reset Password Link */}
+          <div className="text-right mt-2">
+            <Link
+              href="/reset"
+              className="text-sm text-muted-foreground hover:text-primary underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          <div className="my-6 text-center text-muted-foreground text-sm">or</div>
+
+          <Button
+            type="button"
+            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            variant="outline"
+            className="w-full"
+          >
+            Sign in with Google
+          </Button>
+        </CardContent>
+      </Card>
     </main>
   );
 }
@@ -71,7 +93,6 @@ export default function LoginPage() {
   const { status } = useSession();
   const router = useRouter();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (status === "authenticated") {
       router.push("/dashboard");
@@ -79,11 +100,15 @@ export default function LoginPage() {
   }, [status, router]);
 
   if (status === "loading") {
-    return <div className="p-6 text-center">Loading session...</div>;
+    return (
+      <div className="p-6 text-center text-muted-foreground">
+        Loading session...
+      </div>
+    );
   }
 
   return (
-    <Suspense fallback={<div className="p-6 text-center">Loading...</div>}>
+    <Suspense fallback={<div className="p-6 text-center text-muted-foreground">Loading...</div>}>
       <LoginForm />
     </Suspense>
   );

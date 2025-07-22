@@ -1,7 +1,14 @@
 // File: app/users/[username]/page.tsx
-import type { Metadata } from "next";
 
-// ✅ Use `Promise<{ username: string }>` for Next.js 15+
+import type { Metadata } from "next";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+
+// ✅ Route Handler
 export default async function UserProfile({
   params,
 }: {
@@ -10,14 +17,25 @@ export default async function UserProfile({
   const { username } = await params;
 
   return (
-    <main className="p-6">
-      <h1>User Profile: {username}</h1>
-      <p>Welcome to the profile of {username}.</p>
+    <main className="max-w-xl mx-auto mt-10 px-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">User Profile</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-foreground">
+          <p className="text-base">
+            <strong>Username:</strong> {username}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Welcome to the profile of <strong>{username}</strong>.
+          </p>
+        </CardContent>
+      </Card>
     </main>
   );
 }
 
-// ✅ Consistent usage for generateMetadata as well
+// ✅ Metadata (Next.js 15 style)
 export async function generateMetadata({
   params,
 }: {

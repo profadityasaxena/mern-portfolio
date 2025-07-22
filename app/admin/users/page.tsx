@@ -3,6 +3,28 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import ConfirmModal from "@/components/ConfirmModal";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableHeader,
+  TableHead,
+  TableRow,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface User {
   id: string;
@@ -11,7 +33,14 @@ interface User {
   role: string;
 }
 
-const ROLE_OPTIONS = ["user", "admin", "employee", "vendor", "partner", "client"];
+const ROLE_OPTIONS = [
+  "user",
+  "admin",
+  "employee",
+  "vendor",
+  "partner",
+  "client",
+];
 
 export default function AdminUserPage() {
   const { data: session } = useSession();
@@ -35,7 +64,10 @@ export default function AdminUserPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleConfirmedRoleChange = async (userId: string, newRole: string) => {
+  const handleConfirmedRoleChange = async (
+    userId: string,
+    newRole: string
+  ) => {
     const previousUsers = [...users];
     setUsers((curr) =>
       curr.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
@@ -73,61 +105,79 @@ export default function AdminUserPage() {
   };
 
   return (
-    <main className="max-w-5xl mx-auto mt-10 p-6 bg-white shadow rounded">
-      <h1 className="text-2xl font-semibold mb-4">User Management</h1>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
-      {loading ? (
-        <p>Loading users...</p>
-      ) : (
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b bg-gray-100">
-              <th className="text-left py-2 px-3">Email</th>
-              <th className="text-left py-2 px-3">Name</th>
-              <th className="text-left py-2 px-3">Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="text-center py-4 text-gray-500">
-                  No users found.
-                </td>
-              </tr>
-            ) : (
-              users.map((user) => {
-                const isSelf = session?.user?.id === user.id;
-                return (
-                  <tr key={user.id} className="border-b hover:bg-gray-50">
-                    <td className="py-2 px-3">{user.email}</td>
-                    <td className="py-2 px-3">{user.name}</td>
-                    <td className="py-2 px-3">
-                      <select
-                        value={user.role}
-                        onChange={(e) => handleRoleChange(user, e.target.value)}
-                        disabled={isSelf || updatingId === user.id}
-                        className="border px-2 py-1 rounded"
-                        aria-label={`Change role for ${user.email}`}
-                      >
-                        {ROLE_OPTIONS.map((role) => (
-                          <option key={role} value={role}>
-                            {role.charAt(0).toUpperCase() + role.slice(1)}
-                          </option>
-                        ))}
-                      </select>
-                      {isSelf && (
-                        <p className="text-xs text-gray-400">
-                          You cannot change your own role
-                        </p>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      )}
+    <main className="max-w-5xl mx-auto mt-10 px-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl">User Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <p className="text-destructive text-sm mb-4">{error}</p>
+          )}
+
+          {loading ? (
+            <Skeleton className="h-48 w-full rounded" />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Role</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={3}
+                      className="text-center text-muted-foreground py-6"
+                    >
+                      No users found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  users.map((user) => {
+                    const isSelf = session?.user?.id === user.id;
+                    return (
+                      <TableRow key={user.id}>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>{user.name}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={user.role}
+                            disabled={isSelf || updatingId === user.id}
+                            onValueChange={(value) =>
+                              handleRoleChange(user, value)
+                            }
+                          >
+                            <SelectTrigger className="w-[150px]">
+                              <SelectValue placeholder="Select role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {ROLE_OPTIONS.map((role) => (
+                                <SelectItem key={role} value={role}>
+                                  {role.charAt(0).toUpperCase() +
+                                    role.slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {isSelf && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              You cannot change your own role
+                            </p>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       {confirmModal && (
         <ConfirmModal
